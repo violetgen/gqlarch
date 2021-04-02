@@ -14,58 +14,51 @@ import (
 	"github.com/parikshitg/gqlarch/gqlgateway/graph/model"
 )
 
-func (r *queryResolver) Sum(ctx context.Context, req model.SumRequest) (*model.SumResponse, error) {
-	var request = model.SumRequest{A: req.A, B: req.B}
-	requestBody, err := json.Marshal(request)
+func HttpWrapper(url string, req, res interface{}) error {
+	requestBody, err := json.Marshal(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	resp, err := http.Post("http://localhost:8081/add", "application/json", bytes.NewBuffer(requestBody))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *queryResolver) Sum(ctx context.Context, req model.SumRequest) (*model.SumResponse, error) {
+	var request = &model.SumRequest{A: req.A, B: req.B}
 	var response model.SumResponse
-	err = json.Unmarshal(body, &response)
+	err := HttpWrapper("http://localhost:8081/add", request, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	return &model.SumResponse{Result: response.Result}, nil
+	return &response, nil
 }
 
 func (r *queryResolver) Subtract(ctx context.Context, req model.SubtractRequest) (*model.SubtractResponse, error) {
-	var request = model.SubtractRequest{A: req.A, B: req.B}
-	requestBody, err := json.Marshal(request)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.Post("http://localhost:8082/subtract", "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
+	var request = &model.SubtractRequest{A: req.A, B: req.B}
 	var response model.SubtractResponse
-	err = json.Unmarshal(body, &response)
+	err := HttpWrapper("http://localhost:8082/subtract", request, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	return &model.SubtractResponse{Result: response.Result}, nil
+	return &response, nil
 }
 
 // Query returns generated.QueryResolver implementation.
