@@ -1,0 +1,22 @@
+input SumRequest {
+  a: Int!
+  b: Int!
+}
+
+type SumResponse {
+  result: Int!
+}
+
+input SubtractRequest {
+  a: Int!
+  b: Int!
+}
+
+type SubtractResponse {
+  result: Int!
+}
+
+type Query {
+  sum(req: SumRequest!): SumResponse!
+  subtract(req: SubtractRequest!): SubtractResponse!
+}
